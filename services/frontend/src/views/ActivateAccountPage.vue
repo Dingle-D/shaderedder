@@ -48,26 +48,26 @@
       }
     },
     async mounted() {
-  const token = localStorage.getItem('activation_token');
-  if (!token) {
-    this.error = 'No activation token found';
-    return;
-  }
+      const token = localStorage.getItem('activation_token');
+      if (!token) {
+        this.error = 'No activation token found';
+        return;
+      }
 
-  try {
-    const response = await api.post('/register/confirm', {
-      access_token: token,
-      token_type: 'bearer'
-    });
+      try {
+        const response = await api.post('/register/confirm', {
+          access_token: token,
+          token_type: 'bearer'
+        });
 
-    if (response.data.success) {
-      this.success = true;
-      localStorage.removeItem('activation_token');
+        if (response.data.success) {
+          this.success = true;
+          localStorage.removeItem('activation_token');
+        }
+      } catch (error) {
+        this.error = error.response?.data?.detail || 'Activation failed';
+      }
     }
-  } catch (error) {
-    this.error = error.response?.data?.detail || 'Activation failed';
-  }
-}
   }
   </script>
   

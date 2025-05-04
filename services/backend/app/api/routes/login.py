@@ -17,7 +17,7 @@ from pydantic import ValidationError
 from typing import Annotated
 
 reusable_oauth2 = OAuth2PasswordBearer(
-    tokenUrl=f"{settings.API_V1_STR}/login/access-token"
+    tokenUrl=f"{settings.API_V1_STR}/login"
 )
 
 TokenDep = Annotated[str, Depends(reusable_oauth2)]
@@ -34,19 +34,19 @@ async def get_current_user(token: TokenDep) -> UsersOrm:
         )
     user = await get_user_by_username(token_data['sub'])
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User not found")
     if not user.is_activated:
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Inactive user")
     return user
 
 
-@router.post("/access-token")
+@router.post("/")
 async def login_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]) -> Token:
     user = await authenticate(UserLogin(username=form_data.username, password=form_data.password))
     if not user:
-        raise HTTPException(status_code=400, detail="Incorrect email or password")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Incorrect email or password")
     elif not user.is_activated:
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Inactive user")
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return Token(
         access_token = create_access_token(user.username, expires_delta=access_token_expires)

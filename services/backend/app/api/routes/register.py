@@ -14,7 +14,7 @@ from pydantic import ValidationError
 
 router = APIRouter(prefix="/register", tags=["register"])
 
-@router.post("/new")
+@router.post("/")
 async def register_account(user: UserRegister):
     if settings.emails_enabled:
         try:

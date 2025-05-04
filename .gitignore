@@ -1,1 +1,3 @@
 services/backend/app/.env
+services/frontend/node_modules
+services/frontend/node_modules/*
