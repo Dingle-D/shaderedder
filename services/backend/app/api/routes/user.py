@@ -1,9 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-router = APIRouter(prefix="/users", tags=["login"])
+from app.api.routes.login import CurrentUser
+from app.models import UserView
 
-@router.get("/me")
-def read_users_me(current_user: User = Depends(get_current_user)):
+router = APIRouter(prefix="/user", tags=["user"])
+
+@router.get("/me", response_model=UserView)
+def read_users_me(current_user: CurrentUser):
     return current_user
 
 

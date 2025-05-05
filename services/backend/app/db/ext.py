@@ -1,4 +1,4 @@
-from app.db.database import session_factory
+from app.db.postgresql import session_factory
 
 def connection(method):
     """

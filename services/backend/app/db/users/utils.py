@@ -1,16 +1,18 @@
 from sqlalchemy import select
-
+from datetime import timedelta
 
 from app.db.ext import connection
 from app.db.users.schemas import UsersOrm
+from app.db.redis import redis_client
 
-from app.models import UserBase, UserLogin, UserView, PageOptions, Role
+from app.models import UserLogin, UserRegister, PageOptions, Role
 from app.core.config import settings
 
 from app.security.password import get_password_hash, verify_password
 
 import app.security
 
+CONFIRM_PREFIX = 'activate:'
 
 @connection 
 async def init_users(session):
@@ -36,18 +38,51 @@ async def get_user_by_username(username: str, session):
     user = result.scalars().first()
     return user
 
-
 @connection
-async def add_user(user: UserLogin, session, is_activated: bool =False, role: Role = Role.USER):
-    new_user = UsersOrm(username=user.username, email=user.email, password=get_password_hash(user.password), is_activated=is_activated, role=role)
+async def get_user_by_email(email: str, session):
+    result = await session.execute(select(UsersOrm).where(UsersOrm.email == email))
+    user = result.scalars().first()
+    return user
+
+###
+# This function can be used to add user instantly without email
+# confirmation. It supposed to be used by admins or by service
+###
+@connection
+async def add_user(user: UserRegister, session, role: Role = Role.USER):
+    new_user = UsersOrm(username=user.username, email=user.email, password=get_password_hash(user.password), is_activated=True, role=role)
     session.add(new_user)
     await session.commit()
 
-@connection
-async def add_user_plain(user: UserLogin, session, is_activated: bool =False, role: Role = Role.USER):
-    new_user = UsersOrm(username=user.username, email=user.email, password=user.password, is_activated=is_activated, role=role)
-    session.add(new_user)
-    await session.commit()
+###
+# This function adds regular user into temporary redis
+# database. Record can be accessed by UUID
+async def schedule_user(user: UserRegister, token: str):
+    ttl = timedelta(minutes=settings.EMAIL_ACTIVATION_TOKEN_EXPIRE_MINUTES)
+    key = CONFIRM_PREFIX + token
+    if redis_client.exists(key):
+        raise ValueError("Redis: Key already exists")
+    redis_client.hmset(key, {
+        'username': user.username,
+        'email': user.email,
+        'password': get_password_hash(user.password)
+    })
+    redis_client.expire(key, ttl)
+
+    
+async def confirm_user(token: str):
+    key = CONFIRM_PREFIX + token
+    user_info = redis_client.hgetall(key)
+    if not user_info:
+        raise ValueError("Redis: Key not found")
+    user = UserRegister(
+        username=user_info.get('username'),
+        email=user_info.get('email'),
+        password=user_info.get('password')
+    )
+    redis_client.delete(key)
+    await add_user(user)
+
 
 @connection 
 async def del_user(username: str, session):

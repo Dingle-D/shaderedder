@@ -65,6 +65,10 @@ class Settings(BaseSettings):
             path=self.POSTGRES_DB,
         )
 
+    REDIS_PASSWORD: str
+    REDIS_HOST: str
+    REDIS_PORT: int = 6379
+
     SMTP_TLS: bool = True 
     SMTP_SSL: bool = False 
     SMTP_PORT: int = 587 
@@ -81,7 +85,7 @@ class Settings(BaseSettings):
         return self
 
     EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
-    EMAIL_ACTIVATION_TOKEN_EXPIRE_MINUTES: int = 30
+    EMAIL_ACTIVATION_TOKEN_EXPIRE_MINUTES: int = 10
 
     @computed_field 
     @property 

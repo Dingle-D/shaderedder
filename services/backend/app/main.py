@@ -1,8 +1,9 @@
 from fastapi import FastAPI 
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.api_router import api_router
-from app.db.database import init_db, close_db
+from app.db.postgresql import init_db, close_db
 from app.db.users.utils import init_users
+from app.db.shaders.utils import init_shaders
 from app.core.config import settings
 import asyncio
 
@@ -21,6 +22,7 @@ app.add_middleware(
 async def startup():
     await init_db()
     await init_users()
+    await init_shaders()
 
 @app.on_event("shutdown")
 async def startup():

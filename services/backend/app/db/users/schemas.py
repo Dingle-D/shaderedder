@@ -1,6 +1,6 @@
 from sqlalchemy import Date, Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
-from app.db.database import Base 
+from app.db.postgresql import Base 
 from typing import Optional
 from app.models import Role
 import datetime
