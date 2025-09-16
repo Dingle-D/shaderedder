@@ -1,9 +1,10 @@
 from fastapi import FastAPI 
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from app.api.api_router import api_router
 from app.db.postgresql import init_db, close_db
-from app.db.users.utils import init_users
-from app.db.shaders.utils import init_shaders
+from app.db.services.users import init_users
+from app.db.services.shaders import init_shaders
 from app.core.config import settings
 import asyncio
 
@@ -16,7 +17,10 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=['*'],
     allow_headers=['*'],
+    expose_headers=['X-Uniforms', 'Uniforms', 'X-Custom-Uniforms'],
 )
+
+app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 
 @app.on_event("startup")
 async def startup():

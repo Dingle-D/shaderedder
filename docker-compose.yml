@@ -103,8 +103,12 @@ services:
       - POSTGRES_USER=${POSTGRES_USER?Variable not set}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
       - SENTRY_DSN=${SENTRY_DSN}
+      - STORAGE=${STORAGE}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
     volumes:
       - ./services/backend:/app
+      - ./uploads:${STORAGE}
     command: uvicorn app.main:app --reload --host 0.0.0.0 --port 5000
 
 
@@ -113,9 +117,9 @@ services:
     ports:
       - 8080:8080
     volumes:
-      - ./services/frontend:/app 
+      - ./services/frontend-vite:/app 
       - /app/node_modules
-    command: yarn serve
+    command: yarn dev --host
 
 volumes:
   app-db-data:

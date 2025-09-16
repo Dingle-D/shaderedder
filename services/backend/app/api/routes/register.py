@@ -1,6 +1,6 @@
 
 from app.models import UserRegister, Token, Message
-from app.db.users.utils import schedule_user, confirm_user, add_user, del_user, get_user_by_username, get_user_by_email
+from app.db.services.users import schedule_user, confirm_user, add_user, del_user, get_user_by_username, get_user_by_email
 from app.security.access_token import create_access_token, decode_access_token
 from app.core.config import settings
 from app.email.utils import send_email, generate_account_activation_email

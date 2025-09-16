@@ -2,6 +2,8 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 
+from starlette.requests import Request
+
 from datetime import timedelta
 
 import jwt
@@ -9,10 +11,11 @@ from jwt.exceptions import InvalidTokenError
 
 from app.security.access_token import create_access_token
 from app.core.config import settings
-from app.db.users.utils import authenticate
-from app.models import UserView, UserLogin, Token
+from app.db.services.users import authenticate, get_user_by_email, add_user_oauth
+from app.models import UserView, UserLogin, Token, UserOauth
 
 from app.api.utils import CurrentUser
+import app.security.oauth as oauth
 
 from typing import Annotated
 
@@ -29,6 +32,42 @@ async def login_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Dep
     return Token(
         access_token = create_access_token(user.username, expires_delta=access_token_expires)
     )
+
+@router.get("/google-login")
+async def google_login(request: Request):
+    return await oauth.login(request)
+
+# имя функции должно быть именно google_auth для коректной работы starlette
+@router.get("/google-auth")
+async def google_auth(request: Request):
+    userinfo = await oauth.auth(request)
+    user = await get_user_by_email(userinfo["user"]["email"])
+    if not user:
+        add_user_oauth(UserOauth(username=userinfo["user"]["name"], email=userinfo["user"]["email"]))
+    access_token_expires = timedelta(seconds=userinfo["token"]["expires_in"])
+    return Token(
+        access_token = create_access_token(userinfo["user"]["name"], expires_delta=access_token_expires)
+    )
+
+@router.get("/google-login-rd")
+async def google_login_rd(request: Request):
+    return await oauth.login(request, "google_auth_rd")
+
+# то же что и предыдущая но использует редирект для фронтенда
+@router.get("/google-auth-rd")
+async def google_auth_rd(request: Request):
+    userinfo = await oauth.auth(request)
+    user = await get_user_by_email(userinfo["user"]["email"])
+    if not user:
+        add_user_oauth(UserOauth(username=userinfo["user"]["name"], email=userinfo["user"]["email"]))
+    access_token_expires = timedelta(seconds=userinfo["token"]["expires_in"])
+    token = Token(
+        access_token = create_access_token(userinfo["user"]["name"], expires_delta=access_token_expires)
+    )
+    redirect = RedirectResponse(url=f"{settings.FRONTEND_HOST}/auth-callback")
+    redirect.headers['Authorization'] = f"{token.token_type} {token.access_token}"
+    
+    return redirect
 
 @router.post("/test-token", response_model=UserView)
 async def login_test_token(current_user: CurrentUser):

@@ -30,11 +30,17 @@ class Settings(BaseSettings):
         env_ignore_empty=True,
         extra='ignore',
     )
+    DOMAIN: str
     API_V1_STR: str = '/api/v1'
     SECRET_KEY: str = secrets.token_urlsafe(32)
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
     FRONTEND_HOST: str = 'http://localhost:8080'
     ENVIRONMENT: Literal['local', 'staging', 'production'] = 'local'
+    STORAGE: str
+
+    # oauth2
+    GOOGLE_CLIENT_ID: str = ''
+    GOOGLE_CLIENT_SECRET: str = ''
 
     BACKEND_CORS_ORIGINS: Annotated[
         list[AnyUrl] | str, BeforeValidator(parse_cors)

@@ -1,29 +1,25 @@
 from pydantic import (
-                BaseModel,
-                EmailStr,
-                conint,
-                field_validator,
+    BaseModel,
+    EmailStr,
+    conint,
+    field_validator,
+    HttpUrl,
 )
-from typing import Literal
+from fastapi import Query
+from typing import Literal, Optional, TypeVar, Generic, List
 from datetime import datetime
 import enum 
-
-class PageSize(int, enum.Enum):
-    """
-    Max users to return in a single request
-    """
-    SMALL = 15
-    MEDIUM = 30
-    LARGE = 50
-    XLARGE = 100
 
 class Role(int, enum.Enum):
     ADMIN = 1 
     USER = 2
 
+T = TypeVar("T")
 
 class UserBase(BaseModel):
     username: str
+    class Config:
+        from_attributes=True
 
 class UserLogin(UserBase):
     password: str
@@ -31,15 +27,67 @@ class UserLogin(UserBase):
 class UserRegister(UserLogin):
     email: EmailStr
 
+class UserOauth(UserBase):
+    email: EmailStr
+
+class Identifier(BaseModel):
+    id: int
+    class Config:
+        from_attributes=True
+
 class UserView(UserBase):
     id: int
     is_activated: bool
     role: Role
     email: EmailStr
 
-class PageOptions(BaseModel):
-    limit: PageSize = PageSize.SMALL
+class ShaderBase(BaseModel):
+    title: str 
+    author: str
+    class Config:
+        from_attributes=True
+
+class ShaderDescription(BaseModel):
+    title: str
+    author_id: int
+    description: str
+
+class ShaderFileDescription(BaseModel):
+    type: Literal['frag', 'ver']
+    source: str
+    uniforms: str = "[]"
+
+class ShaderView(ShaderBase):
+    id: int
+
+class ShaderComplete(ShaderView):
+    description: str 
+
+class CollectionBase(BaseModel):
+    title: str 
+    class Config:
+        from_attributes=True 
+
+class CollectionView(CollectionBase):
+    id: int 
+    tags: list[str]
+
+class PaginationOptions(BaseModel):
+    limit: conint(ge=1, le=100) = 10
     offset: conint(ge=0) = 0
+
+    @classmethod 
+    def as_query(cls, limit: int = Query(10, ge=1, le=100), offset: int = Query(0, ge=0)):
+        return cls(limit=limit, offset=offset)
+
+class PaginationMeta(BaseModel):
+    offset: int 
+    limit: int 
+    total: Optional[int] = None
+
+class PaginationResponse(BaseModel, Generic[T]):
+    data: List[T]
+    meta: PaginationMeta
 
 class Token(BaseModel):
     access_token: str 

@@ -6,8 +6,8 @@ from typing import Annotated
 from app.core.config import settings
 from app.security.access_token import decode_access_token
 
-from app.db.users.utils import get_user_by_username 
-from app.db.users.schemas import UsersOrm
+from app.db.services.users import get_user_by_username 
+from app.db.schemas import UsersOrm
 
 from app.models import Role
 
