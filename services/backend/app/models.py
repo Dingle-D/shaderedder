@@ -4,6 +4,8 @@ from pydantic import (
     conint,
     field_validator,
     HttpUrl,
+    validator,
+    ValidationError
 )
 from fastapi import Query
 from typing import Literal, Optional, TypeVar, Generic, List
@@ -107,3 +109,27 @@ class MessageRegister(Message):
 class EmailStatus(BaseModel):
     status_code: int
     status_text: str
+
+class Password(BaseModel):
+    password: str
+
+    @validator("password")
+    @classmethod
+    def validate_password(cls, value: str) -> str:
+        if len(value) < 8:
+            raise ValueError("Password must be at least 8 symbols in len")
+        
+        if not re.search(r"[A-Z]", value):
+            raise ValueError("Password must contain at least one uppercase character")
+        if not re.search(r"[a-z]", value):
+            raise ValueError("Password must contain at least one lowercase character")
+        if not re.search(r"\d", value):
+            raise ValueError("Password must contain at least one digit")
+        if not re.search(r"[@$!%*?&#]", value):
+            raise ValueError("Password must contain at least one of symbols (@$!%*?&#)")
+        
+        forbidden_pattern = r"[^A-Za-z0-9@$!%*?&#]"
+        if re.search(forbidden_pattern, value):
+            raise ValueError("Allowed only latin symbols, digits and symbols @$!%*?&#")
+        
+        return value

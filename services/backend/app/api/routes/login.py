@@ -1,6 +1,7 @@
 
 from fastapi import APIRouter, Depends, status, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.responses import RedirectResponse
 
 from starlette.requests import Request
 
@@ -59,16 +60,33 @@ async def google_auth_rd(request: Request):
     userinfo = await oauth.auth(request)
     user = await get_user_by_email(userinfo["user"]["email"])
     if not user:
-        add_user_oauth(UserOauth(username=userinfo["user"]["name"], email=userinfo["user"]["email"]))
+        await add_user_oauth(UserOauth(username=userinfo["user"]["name"], email=userinfo["user"]["email"]))
     access_token_expires = timedelta(seconds=userinfo["token"]["expires_in"])
     token = Token(
         access_token = create_access_token(userinfo["user"]["name"], expires_delta=access_token_expires)
     )
     redirect = RedirectResponse(url=f"{settings.FRONTEND_HOST}/auth-callback")
-    redirect.headers['Authorization'] = f"{token.token_type} {token.access_token}"
+    #redirect.headers['Authorization'] = f"{token.token_type} {token.access_token}"
+    redirect.set_cookie(
+        key="access_token",
+        value=token.access_token,
+        httponly=False,
+    )
+    redirect.set_cookie(
+        key="token_type",
+        value="Bearer",
+        httponly=False,
+    )
     
     return redirect
 
 @router.post("/test-token", response_model=UserView)
 async def login_test_token(current_user: CurrentUser):
-    return current_user
+    view = UserView(
+        id=current_user.id,
+        role=current_user.role,
+        is_activated=current_user.is_activated,
+        email=current_user.email,
+        username=current_user.username
+    )
+    return view

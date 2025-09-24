@@ -62,6 +62,7 @@ async LOGIN(context, credentials) {
       return data;
     } catch (error) {
       context.commit('SET_ERROR', error.response?.data.detail);
+      
       throw error.response?.data.detail;
     }
   },
@@ -69,11 +70,14 @@ async LOGIN(context, credentials) {
   // does not make query to backend. just adds given params into storage.
   LOGIN_FORCE(context, token) {
     try {
+      const tmptoken = {
+        type: token.token_type,
+        token: token.access_token
+      };
       context.commit('SET_AUTH', {
         type: token.token_type,
         token: token.access_token
       });
-      return data
     } catch (error) {
       context.commit('SET_ERROR', error.response?.data.detail);
       throw error.response?.data.detail;
@@ -109,9 +113,10 @@ async LOGIN(context, credentials) {
     if (JwtService.getToken()) {
       ApiService.setJwtHeader();
       try {
-        const { user } = await ApiService.post("login/test-token");
-        context.commit('SET_USER_INFO', user);
+        const user = await ApiService.post("login/test-token");
+        context.commit('SET_USER_INFO', user.data);
       } catch (error) {
+        console.error("Token is invalid. Purging authentication.");
         context.commit('PURGE_AUTH');
       }
     } else {

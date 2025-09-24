@@ -60,10 +60,17 @@ const props = defineProps({
     type: String,
     required: false,
     default: ""
+  },
+  author: {
+    type: String,
+    required: false,
+    default: ""
   }
 })
 
 const emit = defineEmits(['selected']);
+let gAuthorSearch = props.author;
+let gSearch = props.search;
 
 onMounted(async () => {
   updateContent(1, null);
@@ -73,7 +80,16 @@ watch(() => props.search, (searchPattern) => {
   let pattern = (searchPattern === "") ? null : searchPattern;
   console.log("Updated search pattern. updating content.")
   page.value = 1;
-  updateContent(page.value, pattern);
+  gSearch = pattern
+  updateContent(page.value, search=gSearch, author=gAuthorSearch);
+});
+
+watch(() => props.author, (searchPattern) => {
+  let pattern = (searchPattern === "") ? null : searchPattern;
+  console.log("Updated author filter pattern. updating content.")
+  page.value = 1;
+  gAuthorSearch = pattern
+  updateContent(page.value, search=gSearch, author=gAuthorSearch);
 });
 
 
@@ -88,13 +104,16 @@ function onShaderClick(id) {
   emit('selected', id)
 }
 
-async function updateContent(newPageNumber, search = null) {
+async function updateContent(newPageNumber, search = null, author=null) {
   if (newPageNumber < 1) return;
   try {
     let params = {limit, offset: (newPageNumber - 1) * limit}
 
     if (search)
       params['search'] = search;
+
+    if (author)
+      params['author'] = author;
 
     const response = await ApiService.query(`explore`, params);
     const meta = response.data.meta;

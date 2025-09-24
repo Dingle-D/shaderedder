@@ -58,7 +58,7 @@ import { ref, markRaw } from 'vue'
 // Элементы меню и соответствующие компоненты
 const menu = [
   { key: 'profile', label: 'Profile', comp: ProfileSettings },
-  { key: 'email', label: 'Email', comp: EmailSettings },
+  //{ key: 'email', label: 'Email', comp: EmailSettings },
   { key: 'password', label: 'Password & API', comp: PasswordSettings },
 ]
 

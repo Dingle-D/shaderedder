@@ -2,11 +2,11 @@
   <div>
     <div class="flex space-x-4 px-16 py-6 border-b">
       <img class="aspect-square w-32 mr-6" 
-           src="https://tailwindcss.com/plus-assets/img/ecommerce-images/category-page-04-image-card-01.jpg" 
+           src="@/assets/icons/user.png" 
            alt="PROFILE IMG"/>
       <div>
         <h3 class="text-3xl mb-4"> {{ name }} </h3>
-        <button class="hover:text-gray-400 px-3 py-2 rounded-md text-sm font-medium text-white bg-gray-900"> 
+        <button @click="onEditProfile" class="hover:text-gray-400 px-3 py-2 rounded-md text-sm font-medium text-white bg-gray-900"> 
           <p class="text-xs">EDIT PROFILE</p>
         </button>
       </div>
@@ -34,24 +34,35 @@
 
 <script setup>
   import { ref, markRaw } from 'vue'
+  import { useRouter, useRoute } from 'vue-router'
+  import { useStore } from 'vuex'
   import ShadersLayout from '@/components/layouts/ShadersGrid.vue'
   import CollectionsLayout from '@/components/layouts/CollectionsGrid.vue'
 
   const menu = [
-    {key: "collections", label: "Collections", comp: ShadersLayout},
-    {key: "shaders", label: "Shaders", comp: CollectionsLayout},
-    {key: "saved", label: "Saved", comp: ShadersLayout},
+    {key: "shaders", label: "Shaders", comp: ShadersLayout},
+    //{key: "shaders", label: "Shaders", comp: CollectionsLayout},
+    //{key: "saved", label: "Saved", comp: ShadersLayout},
   ]
 
-  const selected = ref('collections')
+  const selected = ref('shaders')
 
   const tab = ref(null)
+  
+  const router = useRouter()
+  const store = useStore()
+  const route = useRoute()
 
   tab.value = markRaw(ShadersLayout)
 
   function changeTabAndLayout(tab_name, layout) {
     selected.value = tab_name;
     tab.value = markRaw(layout);
+  }
+
+  function onEditProfile() {
+    const userId = route.params.id 
+    router.push({path: `/user/${userId}/settings`})
   }
 
 </script>

@@ -120,7 +120,7 @@ export default {
           username: login, 
           password: password
         })
-        .then(() => this.$router.push({ name: "main" }))
+        .then(() => this.$router.push({ name: "explore" }))
         .catch((error) => console.log("Error in onSubmit:", error));
     },
 

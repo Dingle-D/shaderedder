@@ -79,7 +79,7 @@
                 <!-- Profile dropdown -->
                 <div>
                   <div>
-                    <button type="button" class="flex rounded-full bg-gray-50 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-50" id="user-menu-button" ref="profileButton1" @click="onButtonClick()" @keyup.space.prevent="onButtonEnter()" @keydown.enter.prevent="onButtonEnter()" aria-haspopup="true" :aria-expanded="open.toString()">
+                    <button type="button" class="flex rounded-full bg-gray-50 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-50" id="user-menu-button" ref="profileButton1" @click="onProfile" @keyup.space.prevent="onButtonEnter()" @keydown.enter.prevent="onButtonEnter()" aria-haspopup="true" :aria-expanded="open.toString()">
                       <span class="sr-only">Profile</span>
                       <img class="h-10 w-10 rounded-full" src="@/assets/icons/user.png" alt="">
                     </button>
@@ -105,15 +105,15 @@
       <div x-description="Mobile menu, show/hide based on menu state." class="border-b border-gray-200 bg-gray-50 lg:hidden" id="mobile-menu" v-show="open">
         <div class="space-y-1 px-2 pt-2 pb-3">
           
-            <a href="#" class="bg-gray-100 block px-3 py-2 rounded-md font-medium text-gray-900" aria-current="page" x-state:on="Current" x-state:off="Default" x-state-description="Current: &quot;bg-gray-100&quot;, Default: &quot;hover:bg-gray-100&quot;">
+            <a href="#" @click="onExplore" class="bg-gray-100 block px-3 py-2 rounded-md font-medium text-gray-900" aria-current="page" x-state:on="Current" x-state:off="Default" x-state-description="Current: &quot;bg-gray-100&quot;, Default: &quot;hover:bg-gray-100&quot;">
               Explore
             </a>
           
-            <a href="#" class="hover:bg-gray-100 block px-3 py-2 rounded-md font-medium text-gray-900" x-state-description="undefined: &quot;bg-gray-100&quot;, undefined: &quot;hover:bg-gray-100&quot;">
+            <a href="#" @click="onEditor" class="hover:bg-gray-100 block px-3 py-2 rounded-md font-medium text-gray-900" x-state-description="undefined: &quot;bg-gray-100&quot;, undefined: &quot;hover:bg-gray-100&quot;">
               Editor
             </a>
           
-            <a href="#" class="hover:bg-gray-100 block px-3 py-2 rounded-md font-medium text-gray-900" x-state-description="undefined: &quot;bg-gray-100&quot;, undefined: &quot;hover:bg-gray-100&quot;">
+            <a href="#" @click="onAbout" class="hover:bg-gray-100 block px-3 py-2 rounded-md font-medium text-gray-900" x-state-description="undefined: &quot;bg-gray-100&quot;, undefined: &quot;hover:bg-gray-100&quot;">
               About
             </a>
           
@@ -122,14 +122,14 @@
           <div class="flex items-center px-5">
             <div v-if="isAuthenticated" class="flex items-center space-x-3">
               <div class="flex-shrink-0">
-                <button type="button" class="flex rounded-full bg-gray-50 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-50" id="user-menu-button" ref="profileButton1" @click="onButtonClick()" @keyup.space.prevent="onButtonEnter()" @keydown.enter.prevent="onButtonEnter()" aria-haspopup="true" :aria-expanded="open.toString()">
+                <button type="button" class="flex rounded-full bg-gray-50 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-50" id="user-menu-button" ref="profileButton1" @click="onProfile" @keyup.space.prevent="onButtonEnter()" @keydown.enter.prevent="onButtonEnter()" aria-haspopup="true" :aria-expanded="open.toString()">
                   <span class="sr-only">Profile</span>
                   <img class="h-10 w-10 rounded-full" src="@/assets/icons/user.png" alt="">
                 </button>
               </div>
               <div class="ml-3">
-                <div class="text-base font-medium text-gray-800">username</div>
-                <div class="text-sm font-medium text-gray-500">email@example.com</div>
+                <div class="text-base font-medium text-gray-800">{{userAuthenticated}}</div>
+                <div class="text-sm font-medium text-gray-500">{{emailAuthenticated}}</div>
               </div>
               <button @click="onLogout" type="button" class="inline-flex items-center justify-center rounded-md bg-gray-50 p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-50">
                 <span class="sr-only">logout</span>
@@ -207,6 +207,7 @@
       },
       onProfile() {
         console.log("Clicked profile icon");
+        this.$router.push({name: "me"})
       },
       onSignIn() {
         console.log("Clicked sign in button");
@@ -215,7 +216,9 @@
     },
     computed: {
       ...mapState({
-        isAuthenticated: state => state.auth.isAuthenticated
+        isAuthenticated: state => state.auth.isAuthenticated,
+        userAuthenticated: state => state.auth.user.username,
+        emailAuthenticated: state => state.auth.user.email
       })
     }
   }

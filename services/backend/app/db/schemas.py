@@ -17,6 +17,7 @@ class UsersOrm(Base):
     password: Mapped[str]
     is_activated: Mapped[bool] = mapped_column(default=False)
     role: Mapped[Role] = mapped_column(default=Role.USER)
+    should_reset_token: Mapped[bool] = mapped_column(default=False)
 
     shaders: Mapped[list["ShadersOrm"]] = relationship(back_populates='author')
 

@@ -35,7 +35,7 @@
         </div>
       </div>
       <div class="border-t pt-4">
-        <button class="w-full flex items-center justify-center hover:text-gray-400 px-3 py-2 rounded-md text-sm font-medium text-white bg-gray-900">
+        <button @click="onSaveProfile" class="w-full flex items-center justify-center hover:text-gray-400 px-3 py-2 rounded-md text-sm font-medium text-white bg-gray-900">
           <h3 class="text-lg">SAVE PROFILE</h3>
         </button>
       </div>
@@ -44,12 +44,19 @@
 </template>
 
 <script>
+import ApiService from '@/common/api.service'
+
 export default {
   name: "ProfileSettings",
   data() {
     return {
       usernamePattern: ''
     }
-  }
+  },
+  methods: {
+    async onSaveProfile() {
+      result = await ApiService.post('/user/change_username', {username: this.usernamePattern})
+    }
+  },
 }
 </script>

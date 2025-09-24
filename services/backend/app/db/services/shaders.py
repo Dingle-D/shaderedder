@@ -1,6 +1,7 @@
 from sqlalchemy import select, func
+from sqlalchemy.orm import selectinload
 
-from app.db.schemas import ShadersOrm, ShaderFileOrm
+from app.db.schemas import ShadersOrm, ShaderFileOrm, UsersOrm
 from app.db.postgresql import connection
 
 from app.core.config import settings
@@ -68,6 +69,12 @@ async def get_shaders_by_substring(pattern: str, session):
 @connection
 async def get_shaders_window(options: PaginationOptions, session):
     result = await session.execute(select(ShadersOrm).offset(options.offset).limit(options.limit))
+    users = result.scalars().all()
+    return users
+
+@connection
+async def get_shaders_view_window(options: PaginationOptions, session):
+    result = await session.execute(select(ShadersOrm).offset(options.offset).limit(options.limit).options(selectinload(ShadersOrm.author)))
     users = result.scalars().all()
     return users
 

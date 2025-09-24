@@ -76,10 +76,21 @@ async def add_user_plain(user: UserRegister, session, role: Role = Role.USER):
 # This function adds user using data from OAuth2
 ###
 @connection
-async def add_user_oauth(user: UserOauth):
+async def add_user_oauth(user: UserOauth, session):
     new_user = UsersOrm(username=user.username, email=user.email, password="", is_activated=True, role=Role.USER)
     session.add(new_user)
     await session.commit()
+
+@connection 
+async def change_user_username(id: int, username: str, session):
+    result = await session.execute(select(UsersOrm).where(UserOrm.id == id))
+    user = result.scalars().first()
+    if not user:
+        return None 
+    user.username = username 
+    await session.commit()
+    await session.refresh(user)
+    return user
 
 ###
 # This function adds regular user into temporary redis

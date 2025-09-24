@@ -27,7 +27,7 @@ async def get_current_user(token: TokenDep) -> UsersOrm:
         )
     user = await get_user_by_username(token_data['sub'])
     if not user:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User not found")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User {token_data['sub']} not found")
     if not user.is_activated:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Inactive user")
     return user

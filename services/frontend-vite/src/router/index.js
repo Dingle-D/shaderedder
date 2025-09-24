@@ -76,6 +76,16 @@ const routes = [
     component: () => import('@/views/AdminView.vue')
   },
   {
+    path: '/me',
+    name: 'me',
+    component: () => import('@/views/MeView.vue')
+  },
+  {
+    path: '/auth-callback',
+    name: 'auth-callback',
+    component: () => import('@/views/AuthCallbackView.vue')
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
     component: () => import('@/views/NotFoundView.vue')

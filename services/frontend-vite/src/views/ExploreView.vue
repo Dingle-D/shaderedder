@@ -24,7 +24,7 @@
         </button>
 
       </div>
-      <ShadersGrid @selected="onShaderClick" :search="searchPattern"/>
+      <ShadersGrid @selected="onShaderClick" :author="authorPattern" :search="searchPattern"/>
 
     </div>
   </div>
@@ -43,6 +43,7 @@ const page = ref(1)
 
 const searchInputContent = ref('')
 const searchPattern = ref('')
+const authorPattern = ref('')
 
 const router = useRouter();
 
