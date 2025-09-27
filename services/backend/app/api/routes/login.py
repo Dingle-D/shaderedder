@@ -22,7 +22,7 @@ from typing import Annotated
 
 router = APIRouter(prefix="/login", tags=["login"])
 
-@router.post("/")
+@router.post("")
 async def login_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]) -> Token:
     user = await authenticate(UserLogin(username=form_data.username, password=form_data.password))
     if not user:

@@ -10,7 +10,7 @@ from app.models import (
 
 router = APIRouter(prefix="/explore", tags=["explore"])
 
-@router.get("/", response_model=PaginationResponse[ShaderView])
+@router.get("", response_model=PaginationResponse[ShaderView])
 async def get_shaders(pagination: PaginationOptions = Depends(PaginationOptions.as_query), search: str = None):
     result = await get_shaders_view_window(pagination)
     #print("\n\n\nRESULT:", result[0].__dict__)

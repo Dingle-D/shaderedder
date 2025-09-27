@@ -15,7 +15,7 @@ from uuid import uuid4, UUID
 
 router = APIRouter(prefix="/register", tags=["register"])
 
-@router.post("/")
+@router.post("")
 async def register_account(user: UserRegister):
     if settings.emails_enabled:
         has_username = await get_user_by_username(user.username)
