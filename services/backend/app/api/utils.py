@@ -7,6 +7,7 @@ from app.core.config import settings
 from app.security.access_token import decode_access_token
 
 from app.db.services.users import get_user_by_username 
+from app.db.services.sessions import get_session_by_token
 from app.db.schemas import UsersOrm
 
 from app.models import Role
@@ -25,6 +26,11 @@ async def get_current_user(token: TokenDep) -> UsersOrm:
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials",
         )
+
+    user_session = await get_session_by_token(token)
+    if not user_session:
+        raise HTTPException(status_code=status.HTTP_401_NOT_AUTHORIZED, detail="invalid token")
+
     user = await get_user_by_username(token_data['sub'])
     if not user:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User {token_data['sub']} not found")
@@ -33,6 +39,12 @@ async def get_current_user(token: TokenDep) -> UsersOrm:
     return user
 
 CurrentUser = Annotated[UsersOrm, Depends(get_current_user)]
+
+async def get_current_active_user(token: TokenDep) -> UsersOrm:
+    current_user = await get_current_user(token)
+    if user.should_reset_password:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Have to change password")
+    return user
 
 async def get_current_admin(token: TokenDep) -> UsersOrm:
     user = await get_current_user(token)

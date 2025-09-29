@@ -56,6 +56,12 @@ async def get_user_by_email(email: str, session):
     user = result.scalars().first()
     return user
 
+@connection 
+async def get_user_by_id(id: int, session):
+    result = await session.execute(select(UsersOrm).where(UsersOrm.id == id))
+    user = result.scalars().first()
+    return user
+
 ###
 # This function can be used to add user instantly without email
 # confirmation. It supposed to be used by admins or by service
@@ -132,8 +138,8 @@ async def del_user(username: str, session):
     await session.commit()
 
 @connection 
-async def activate_user(username: str, session):
-    result = await session.execute(select(UsersOrm).where(UsersOrm.username == username))
+async def activate_user(id: int, session):
+    result = await session.execute(select(UsersOrm).where(UsersOrm.id == id))
     user = result.scalars().first()
     if not user:
         raise ValueError("user not found")
@@ -141,8 +147,8 @@ async def activate_user(username: str, session):
     await session.commit()
 
 @connection 
-async def deactivate_user(username: str, session):
-    result = await session.execute(select(UsersOrm).where(UsersOrm.username == username))
+async def deactivate_user(id: int, session):
+    result = await session.execute(select(UsersOrm).where(UsersOrm.id == id))
     user = result.scalars().first()
     if not user:
         raise ValueError("user not found")

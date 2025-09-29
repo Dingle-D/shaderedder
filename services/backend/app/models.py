@@ -40,6 +40,7 @@ class Identifier(BaseModel):
 class UserView(UserBase):
     id: int
     is_activated: bool
+    should_reset_password: bool
     role: Role
     email: EmailStr
 
@@ -98,6 +99,14 @@ class Token(BaseModel):
 class EmailData(BaseModel):
     html_content: str
     subject: str
+
+class SessionBase(BaseModel):
+    user_id: int 
+    token: str 
+    creation_date: datetime
+
+class SessionView(SessionBase):
+    id: int 
 
 class Message(BaseModel):
     success: bool

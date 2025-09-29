@@ -9,11 +9,11 @@
       <li
         v-for="user in users"
         :key="user.id"
-        class="flex items-center justify-between bg-white rounded-lg border border-gray-300 hover:border-gray-900 p-4"
+        class="flex items-center justify-between bg-white rounded-lg border border-gray-300 hover:border-gray-900 px-4 py-2"
       >
         <div>
           <div class="font-semibold text-lg">{{ user.username }}</div>
-          <div class="text-sm text-gray-600">{{ user.email }}</div>
+          <div class="text-sm text-gray-600">{{ user.email }} (id: {{user.id}})</div>
           <div class="text-xs text-gray-500 mt-1">
             State:
             <span :class="user.is_activated ? 'text-green-600' : 'text-red-600'">
@@ -27,7 +27,7 @@
           <div class="relative group">
             <button
               @click="toggleActivation(user)"
-              class="p-2 text-gray-600 rounded-full hover:bg-gray-100 transition"
+              class="p-2 text-gray-100 bg-red-600 rounded-md hover:bg-red-400 transition"
             >
               <svg xmlns="http://www.w3.org/2000/svg"
                 :class="'w-6 h-6'"
@@ -46,7 +46,17 @@
             </span>
           </div>
 
+          <div class="relative group">
+            <button
+              @click="userSettings(user)"
+              class="p-2 text-gray-100 bg-gray-900 rounded-md hover:text-gray-400 transition"
+            >
+              Settings
+            </button>
+          </div>
+
           <!-- Сменить пароль -->
+          <!-- 
           <div class="relative group">
             <button
               @click="changePassword(user)"
@@ -68,8 +78,10 @@
               Change password
             </span>
           </div>
+          -->
 
           <!-- Сменить имя -->
+          <!--
           <div class="relative group">
             <button
               @click="changeName(user)"
@@ -91,6 +103,7 @@
               Change username
             </span>
           </div>
+          -->
         </div>
       </li>
     </ul>
@@ -102,6 +115,7 @@ import ApiService from "@/common/api.service";
 import PowerIcon from "@/components/icons/PowerIcon.vue";
 import EditIcon from "@/components/icons/EditIcon.vue";
 import PasswordIcon from "@/components/icons/PasswordIcon.vue";
+import SettingsIcon from "@/components/icons/SettingsIcon.vue";
 
 export default {
   name: "UserList",
@@ -122,7 +136,7 @@ export default {
       this.loading = true;
       this.error = null;
       try {
-        const response = await ApiService.get(`admin/get-users`); // замени на реальный endpoint
+        const response = await ApiService.query(`admin/get-users`); // замени на реальный endpoint
         console.log("Response:", response)
         this.users = response.data.data;
       } catch (err) {
@@ -132,15 +146,21 @@ export default {
         this.loading = false;
       }
     },
-    async toggleActivation(user) {
+    async toggleActivation(user, is_activated) {
       try {
-        await fetch(`/api/users/${user.id}/toggle-activation`, {
-          method: "POST",
-        });
-        user.is_activated = !user.is_activated;
+        let result
+        if (user.is_activated)
+          result = await ApiService.post(`/admin/deactivate-user/${user.id}`);
+        else 
+          result = await ApiService.post(`/admin/activate-user/${user.id}`);
+        if (result.data && result.data.success == true)
+          user.is_activated = !user.is_activated;
       } catch {
         alert("Ошибка при смене статуса");
       }
+    },
+    async settings(user) {
+
     },
     async changePassword(user) {
       const newPassword = prompt(`Введите новый пароль для ${user.username}:`);

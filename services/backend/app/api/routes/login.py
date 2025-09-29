@@ -5,7 +5,7 @@ from fastapi.responses import RedirectResponse
 
 from starlette.requests import Request
 
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 import jwt
 from jwt.exceptions import InvalidTokenError
@@ -13,7 +13,8 @@ from jwt.exceptions import InvalidTokenError
 from app.security.access_token import create_access_token
 from app.core.config import settings
 from app.db.services.users import authenticate, get_user_by_email, add_user_oauth
-from app.models import UserView, UserLogin, Token, UserOauth
+from app.db.services.sessions import add_session
+from app.models import UserView, UserLogin, Token, UserOauth, SessionBase
 
 from app.api.utils import CurrentUser
 import app.security.oauth as oauth
@@ -30,9 +31,12 @@ async def login_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Dep
     elif not user.is_activated:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Inactive user")
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    return Token(
+    token = Token(
         access_token = create_access_token(user.username, expires_delta=access_token_expires)
     )
+    await add_session(SessionBase(token=token.access_token, creation_date=datetime.utcnow(), user_id=user.id))
+    
+    return token
 
 @router.get("/google-login")
 async def google_login(request: Request):
@@ -46,9 +50,11 @@ async def google_auth(request: Request):
     if not user:
         add_user_oauth(UserOauth(username=userinfo["user"]["name"], email=userinfo["user"]["email"]))
     access_token_expires = timedelta(seconds=userinfo["token"]["expires_in"])
-    return Token(
+    token = Token(
         access_token = create_access_token(userinfo["user"]["name"], expires_delta=access_token_expires)
     )
+    await add_session(SessionBase(token=token.access_token, creation_date=datetime.utcnow(), user_id=user.id))
+    return token
 
 @router.get("/google-login-rd")
 async def google_login_rd(request: Request):
@@ -65,6 +71,7 @@ async def google_auth_rd(request: Request):
     token = Token(
         access_token = create_access_token(userinfo["user"]["name"], expires_delta=access_token_expires)
     )
+    await add_session(SessionBase(token=token.access_token, creation_date=datetime.utcnow(), user_id=user.id))
     redirect = RedirectResponse(url=f"{settings.FRONTEND_HOST}/auth-callback")
     #redirect.headers['Authorization'] = f"{token.token_type} {token.access_token}"
     redirect.set_cookie(
@@ -86,6 +93,7 @@ async def login_test_token(current_user: CurrentUser):
         id=current_user.id,
         role=current_user.role,
         is_activated=current_user.is_activated,
+        should_reset_password=current_user.should_reset_password,
         email=current_user.email,
         username=current_user.username
     )

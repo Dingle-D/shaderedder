@@ -17,9 +17,10 @@ class UsersOrm(Base):
     password: Mapped[str]
     is_activated: Mapped[bool] = mapped_column(default=False)
     role: Mapped[Role] = mapped_column(default=Role.USER)
-    should_reset_token: Mapped[bool] = mapped_column(default=False)
+    should_reset_password: Mapped[bool] = mapped_column(default=False)
 
     shaders: Mapped[list["ShadersOrm"]] = relationship(back_populates='author')
+    sessions: Mapped[list["SessionsOrm"]] = relationship(back_populates='user')
 
 
 class ShadersOrm(Base):
@@ -47,3 +48,15 @@ class ShaderFileOrm(Base):
     shader_id: Mapped[int] = mapped_column(ForeignKey('Shaders.id'))
 
     shader: Mapped['ShadersOrm'] = relationship(back_populates='shader_files')
+
+
+class SessionsOrm(Base):
+    __tablename__ = 'Sessions'
+
+    id: Mapped[int] = mapped_column(primary_key=True) 
+    token: Mapped[str]
+    creation_date: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.utcnow())
+    user_id: Mapped[int] = mapped_column(ForeignKey("Users.id"))
+
+    user: Mapped["UsersOrm"] = relationship(back_populates='sessions')
+
