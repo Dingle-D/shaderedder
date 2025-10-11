@@ -115,7 +115,10 @@ async function updateContent(newPageNumber, search = null, author=null) {
     if (author)
       params['author'] = author;
 
+    console.log(import.meta.env)
+    console.log(ApiService.getApiUrl())
     const response = await ApiService.query(`explore`, params);
+    console.log(response)
     const meta = response.data.meta;
     shaders.value = response.data.data;
     totalPages.value = Math.floor(meta.total / meta.limit) + 1;

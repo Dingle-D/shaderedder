@@ -1,5 +1,5 @@
 
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status, HTTPException, Form
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import RedirectResponse
 
@@ -17,6 +17,7 @@ from app.db.services.sessions import add_session
 from app.models import UserView, UserLogin, Token, UserOauth, SessionBase
 
 from app.api.utils import CurrentUser
+from app.api.captcha import is_valid_captcha
 import app.security.oauth as oauth
 
 from typing import Annotated
@@ -24,7 +25,14 @@ from typing import Annotated
 router = APIRouter(prefix="/login", tags=["login"])
 
 @router.post("")
-async def login_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]) -> Token:
+async def login_access_token(
+        form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+        captcha: str = Form(...)
+) -> Token:
+    valid_captcha = await is_valid_captcha(captcha, action='login')
+    if not valid_captcha:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='invalid recaptcha')
+
     user = await authenticate(UserLogin(username=form_data.username, password=form_data.password))
     if not user:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Incorrect email or password")

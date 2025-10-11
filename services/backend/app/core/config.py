@@ -38,6 +38,9 @@ class Settings(BaseSettings):
     ENVIRONMENT: Literal['local', 'staging', 'production'] = 'local'
     STORAGE: str
 
+    # captcha
+    RECAPTCHA_SECRET_KEY: str = ''
+
     # oauth2
     GOOGLE_CLIENT_ID: str = ''
     GOOGLE_CLIENT_SECRET: str = ''

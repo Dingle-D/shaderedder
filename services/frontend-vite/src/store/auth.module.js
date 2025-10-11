@@ -46,6 +46,7 @@ async LOGIN(context, credentials) {
       params.append('grant_type', 'password');
       params.append('username', credentials.username);
       params.append('password', credentials.password);
+      params.append('captcha', credentials.captcha);
 
       const { data } = await ApiService.post("login", params, {
         headers: {

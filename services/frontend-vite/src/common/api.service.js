@@ -2,7 +2,8 @@ import axios from "axios";
 import JwtService from "@/common/jwt.service";
 
 //const api_url = process.env.VUE_APP_API_URL;
-const api_url = "http://localhost:5000/api/v1";
+//const api_url = "http://localhost:5000/api/v1";
+const api_url = import.meta.env.VITE_API_URL;
 
 const ApiService = {
   getApiUrl() {

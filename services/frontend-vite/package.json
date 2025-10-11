@@ -23,6 +23,7 @@
     "vue": "^3.5.17",
     "vue-axios": "^3.5.2",
     "vue-codemirror": "^6.1.1",
+    "vue-recaptcha-v3": "^2.0.1",
     "vue-router": "^4.5.1",
     "vuex": "^4.1.0"
   },

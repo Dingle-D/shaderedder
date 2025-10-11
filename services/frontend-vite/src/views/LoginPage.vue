@@ -100,6 +100,7 @@
 <script>
 import ApiService from "@/common/api.service";
 import { mapState, mapActions } from "vuex";
+import { useReCaptcha } from 'vue-recaptcha-v3';
 
 export default {
   name: "AppLogin",
@@ -108,20 +109,35 @@ export default {
       form: {
         login: '',
         password: ''
-      }
+      },
+      executeRecaptcha: null,
+      recaptchaLoaded: null
     }
+  },
+  mounted() {
+    const { executeRecaptcha, recaptchaLoaded } = useReCaptcha();
+    this.executeRecaptcha = executeRecaptcha;
+    this.recaptchaLoaded = recaptchaLoaded;
   },
   methods: {
     ...mapActions('auth', ['LOGIN']),
 
-    onSubmit(login, password) {
-      this.$store
-        .dispatch('LOGIN', { 
-          username: login, 
-          password: password
-        })
-        .then(() => this.$router.push({ name: "explore" }))
-        .catch((error) => console.log("Error in onSubmit:", error));
+    async onSubmit(login, password) {
+      try {
+        await this.recaptchaLoaded();
+        const token = await this.executeRecaptcha('login')
+        console.log("Captcha: ", token);
+
+        this.$store
+          .dispatch('LOGIN', { 
+            username: login, 
+            password: password,
+            captcha: token,
+          });
+        this.$router.push({ name: "explore" });
+      } catch (error) {
+        console.error("Error in onSubmit:", error);
+      }
     },
 
     onGuglSignIn() {
