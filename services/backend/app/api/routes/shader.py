@@ -6,7 +6,8 @@ from app.db.services.shaders import add_shader, get_shader_by_id, get_shader_fil
 from app.core.config import settings
 from app.api.utils import CurrentUser
 
-from app.models import ShaderDescription, ShaderFileDescription, Message
+from app.models import ShaderDescription, ShaderFileDescription, Message, AccessType
+from app.s3.s3_client import S3Client
 
 from typing import List
 from pathlib import Path 
@@ -15,6 +16,13 @@ import uuid
 import os
 
 UPLOAD_DIR = settings.STORAGE
+UPLOAD_S3 = S3Client(
+    settings.S3_ACCESS_KEY, 
+    settings.S3_SECRET_KEY, 
+    settings.S3_ENDPOINT_URL, 
+    settings.S3_BUCKET_NAME,
+    settings.S3_CERTIFICATE
+)
 
 def _get_absolute_path(filename: str) -> str:
     pth = Path.cwd() / UPLOAD_DIR
@@ -29,6 +37,27 @@ def _generate_random_name(user_id, extension):
     short_name = base64.urlsafe_b64encode(u.bytes).rstrip(b"=").decode('utf-8')
     return f"{user_id}_{short_name}.{extension}"
 
+async def _save_file(filename: str, file):
+    if settings.SHOULD_USE_S3:
+        try:
+            await UPLOAD_S3.upload_file(file, filename)
+        except Exception as e:
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e))
+    else:
+        file_path = _get_absolute_path(filename)
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file, buffer)
+
+async def _update_file(file_path: str, file):
+    if settings.SHOULD_USE_S3:
+        try:
+            await UPLOAD_S3.upload_file(file, file_path)
+        except Exception as e:
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e))
+    else:
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file, buffer)
+
 router = APIRouter(prefix="/shader", tags=["shader"])
 
 @router.post("/upload")
@@ -37,6 +66,7 @@ async def upload_shader(
     file: UploadFile = File(...),
     title: str = Form(...),
     type: str = Form(...),
+    access: AccessType = Form(...),
     description: str = Form(...),
     uniforms: str = Form(...)
 ):
@@ -47,11 +77,13 @@ async def upload_shader(
         sdesc = ShaderDescription(
             title=title,
             description=description,
+            access_type=access,
             author_id=current_user.id
         )
         sfdesc = ShaderFileDescription(
             type=type,
             source=_generate_random_name(current_user.id, type),
+            storage_type='s3',
             uniforms=uniforms
         )
     except Exception as e:
@@ -59,9 +91,8 @@ async def upload_shader(
 
     filename = sfdesc.source
 
-    file_path = _get_absolute_path(filename)
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    print(f"\n\n\nFILE URL: {filename}\n\n\n\n")
+    await _save_file(filename, file.file)
 
     await add_shader(sdesc, sfdesc)
     return Message(success=True)
@@ -71,7 +102,7 @@ async def udate_shader(
     current_user: CurrentUser,
     file: UploadFile = File(...),
     shader_id: int = Form(...),
-    uniforms: str = Form
+    uniforms: str = Form(...)
 ):
     shader = await get_shader_by_id(shader_id)
     if not shader:
@@ -82,10 +113,8 @@ async def udate_shader(
     if not shader_file:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Shader not found")
 
-    file_path = shader_file.file
+    await _update_file(shader_file.file, file.file)
     # TODO: should change uniforms on save
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
 
     return Message(success=True)
 
@@ -110,13 +139,24 @@ async def download_shader(id: int):
     shader_file = await get_shader_file_by_shader_id(id)
     if not shader_file:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Shader not found")
-    response = FileResponse(
-        path=shader_file.file,
-        media_type="application/octet-stream",
-        headers={
-            "X-Uniforms": shader_file.uniforms
-        }
-    )
+
+    if shader_file.storage_type == 's3':
+        response = StreamingResponse(
+            content=UPLOAD_S3.stream_file(shader_file.file),
+            media_type="application/octet-stream",
+            headers={
+                "X-Uniforms": shader_file.uniforms
+            }
+        )
+    else:
+        response = FileResponse(
+            path=shader_file.file,
+            media_type="application/octet-stream",
+            headers={
+                "X-Uniforms": shader_file.uniforms
+            }
+        )
+
     return response
 
 @router.get("/meta/{id}")
@@ -128,5 +168,6 @@ async def download_shader(id: int):
     if not shader_file:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Shader not found")
 
-    response = JSONResponse(content={"Uniforms": shader_file.uniforms}, headers={"X-Uniforms": shader_file.uniforms})
+    response = JSONResponse(content={"Uniforms": shader_file.uniforms, "Access": shader.access}, headers={"X-Uniforms": shader_file.uniforms})
     return response
+

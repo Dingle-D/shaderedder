@@ -3,8 +3,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.postgresql import Base 
 
-from typing import Optional
-from app.models import Role
+from typing import Optional, Literal
+from app.models import Role, AccessType
 import datetime
 
 
@@ -29,6 +29,7 @@ class ShadersOrm(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str]
     description: Mapped[str]
+    access: Mapped[AccessType] = mapped_column(default=AccessType.PUBLIC)
     author_id: Mapped[int] = mapped_column(ForeignKey("Users.id"))
 
     author: Mapped['UsersOrm'] = relationship(back_populates='shaders')
@@ -44,6 +45,7 @@ class ShaderFileOrm(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     type: Mapped[str]
     file: Mapped[str]
+    storage_type: Mapped[str]
     uniforms: Mapped[str] # json e.g. [{"name": value}, {"another_name": [value, value]}]
     shader_id: Mapped[int] = mapped_column(ForeignKey('Shaders.id'))
 

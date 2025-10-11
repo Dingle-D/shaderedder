@@ -16,6 +16,11 @@ class Role(int, enum.Enum):
     ADMIN = 1 
     USER = 2
 
+class AccessType(int, enum.Enum):
+    PRIVATE = 1
+    BY_LINK = 2
+    PUBLIC  = 3
+
 T = TypeVar("T")
 
 class UserBase(BaseModel):
@@ -53,15 +58,18 @@ class ShaderBase(BaseModel):
 class ShaderDescription(BaseModel):
     title: str
     author_id: int
+    access_type: AccessType
     description: str
 
 class ShaderFileDescription(BaseModel):
     type: Literal['frag', 'ver']
     source: str
+    storage_type: Literal['local', 's3']
     uniforms: str = "[]"
 
 class ShaderView(ShaderBase):
     id: int
+    access: AccessType
 
 class ShaderComplete(ShaderView):
     description: str 

@@ -14,7 +14,7 @@ router = APIRouter(prefix="/explore", tags=["explore"])
 async def get_shaders(pagination: PaginationOptions = Depends(PaginationOptions.as_query), search: str = None):
     result = await get_shaders_view_window(pagination)
     #print("\n\n\nRESULT:", result[0].__dict__)
-    shader_views = [ShaderView(id=s.id, author=s.author.username, title=s.title) for s in result]
+    shader_views = [ShaderView(id=s.id, author=s.author.username, title=s.title, access=s.access) for s in result]
     #print("ShaderVIEw:", shader_views)
     total = await get_shaders_total()
     return PaginationResponse[ShaderView](

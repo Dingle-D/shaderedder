@@ -42,6 +42,18 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_ID: str = ''
     GOOGLE_CLIENT_SECRET: str = ''
 
+    S3_ACCESS_KEY: str = ''
+    S3_SECRET_KEY: str = ''
+    S3_ENDPOINT_URL: str = ''
+    S3_BUCKET_NAME: str = ''
+    S3_CERTIFICATE: None | str = None
+    @computed_field 
+    @property 
+    def SHOULD_USE_S3(self) -> bool:
+        return (self.S3_ACCESS_KEY != '' and self.S3_SECRET_KEY != '' 
+                and self.S3_ENDPOINT_URL != '' and self.S3_BUCKET_NAME != ''
+        )
+
     BACKEND_CORS_ORIGINS: Annotated[
         list[AnyUrl] | str, BeforeValidator(parse_cors)
     ] = []

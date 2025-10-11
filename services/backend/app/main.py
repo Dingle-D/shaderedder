@@ -15,14 +15,15 @@ app = FastAPI(redirect_slashes=False)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.all_cors_origins,
+    #allow_origins=settings.all_cors_origins,
+    allow_origins=['*'],
     allow_credentials=True,
     allow_methods=['*'],
     allow_headers=['*'],
 )
 
-app.add_middleware(FrameOptionsMiddleware)
-app.add_middleware(CSPMiddleware)
+#app.add_middleware(FrameOptionsMiddleware)
+#app.add_middleware(CSPMiddleware)
 app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 
 @app.on_event("startup")
@@ -40,4 +41,5 @@ def get_root():
     return "Hello, World"
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
 

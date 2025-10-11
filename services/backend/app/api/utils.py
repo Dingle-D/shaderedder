@@ -29,7 +29,7 @@ async def get_current_user(token: TokenDep) -> UsersOrm:
 
     user_session = await get_session_by_token(token)
     if not user_session:
-        raise HTTPException(status_code=status.HTTP_401_NOT_AUTHORIZED, detail="invalid token")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid token")
 
     user = await get_user_by_username(token_data['sub'])
     if not user:

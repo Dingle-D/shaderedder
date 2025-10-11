@@ -24,13 +24,16 @@ def _get_absolute_path(filename: str) -> str:
 async def add_shader(sv: ShaderDescription, sf: ShaderFileDescription, session):
     shader = ShadersOrm(title=sv.title,
         description=sv.description,
+        access=sv.access_type,
         author_id=sv.author_id
     )
     session.add(shader)
 
     file = ShaderFileOrm(
-        type=f.type,
+        type=sf.type,
         file=sf.source,
+        storage_type=sf.storage_type,
+        uniforms=sf.uniforms,
         shader=shader
     )
     session.add(file)
@@ -95,6 +98,7 @@ async def init_shaders(session):
     default_file = ShaderFileOrm(
         type="frag",
         file=_get_absolute_path("default.frag"),
+        storage_type="local",
         shader=default,
         uniforms="[]"
     )
@@ -107,6 +111,7 @@ async def init_shaders(session):
     circles_file = ShaderFileOrm(
         type="frag",
         file=_get_absolute_path("circles.frag"),
+        storage_type="local",
         shader=circles,
         uniforms="[]"
     )
@@ -120,6 +125,7 @@ async def init_shaders(session):
     plasma_file = ShaderFileOrm(
         type="frag",
         file=_get_absolute_path("plasma.frag"),
+        storage_type="local",
         shader=plasma,
         uniforms="[]"
     )
@@ -133,6 +139,7 @@ async def init_shaders(session):
     squares_file = ShaderFileOrm(
         type="frag",
         file=_get_absolute_path("squares.frag"),
+        storage_type="local",
         shader=squares,
         uniforms="[]"
     )
@@ -146,6 +153,7 @@ async def init_shaders(session):
     stars_file = ShaderFileOrm(
         type="frag",
         file=_get_absolute_path("pixel_stars.frag"),
+        storage_type="local",
         shader=stars,
         uniforms="[]"
     )
@@ -159,6 +167,7 @@ async def init_shaders(session):
     vortex_file = ShaderFileOrm(
         type="frag",
         file=_get_absolute_path("vortex.frag"),
+        storage_type="local",
         shader=vortex,
         uniforms="[]"
     )
