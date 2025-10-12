@@ -28,16 +28,19 @@ jobs:
 
     - name: Install dependencies
       run: npm install
-
+      
+    - name: Try to fix Vite issue
+      run: npm update vite @vitejs/plugin-vue
+      
+    - name: Build project
+      run: npm run build
+      
     - name: Run linting
       run: npm run lint || echo "Linting not configured"
 
     - name: Run unit tests
       run: npm run test || echo "Tests not configured"
-
-    - name: Build project
-      run: npm run build
-
+      
   backend-tests:
     runs-on: ubuntu-latest
     defaults:
@@ -59,21 +62,24 @@ jobs:
       run: |
         pip install -r requirements.txt
         pip install pytest pytest-cov
-        pip install flake8 || echo "Flake8 not available"
 
-    - name: Run linting
+    - name: Check Python syntax
       run: |
-        # Если используете flake8
-        command -v flake8 >/dev/null 2>&1 && flake8 . --count --max-complexity=10 --max-line-length=127 --statistics || echo "Flake8 not installed"
-    - name: Run unit tests
+        find . -name "*.py" -exec python -m py_compile {} \;
+        
+    - name: Run basic tests
       run: |
-        pytest --cov=./ --cov-report=xml || echo "Pytest not configured"
+        python -m pytest tests/ -v
 
-    - name: Upload coverage to Codecov
-      if: success() || failure()
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./services/backend/coverage.xml
+    - name: Quick health check
+      run: |
+        python -c "
+        from app.main import app
+        from app.core.config import settings
+        print('App imports successfully')
+        print('Settings loaded')
+        "
+        
 
   docker-validation:
     runs-on: ubuntu-latest
