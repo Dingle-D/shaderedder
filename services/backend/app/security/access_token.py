@@ -17,3 +17,9 @@ def decode_access_token(access_token: str):
     payload = jwt.decode(access_token, settings.SECRET_KEY, algorithms=[ALGORITHM])
     return payload
 
+def is_token_valid(access_token: str):
+    try:
+        decode_access_token(access_token)
+    except (InvalidTokenError, ValidationError):
+        return False
+    return True

@@ -30,11 +30,32 @@ class Settings(BaseSettings):
         env_ignore_empty=True,
         extra='ignore',
     )
+    DOMAIN: str
     API_V1_STR: str = '/api/v1'
     SECRET_KEY: str = secrets.token_urlsafe(32)
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
     FRONTEND_HOST: str = 'http://localhost:8080'
     ENVIRONMENT: Literal['local', 'staging', 'production'] = 'local'
+    STORAGE: str
+
+    # captcha
+    RECAPTCHA_SECRET_KEY: str = ''
+
+    # oauth2
+    GOOGLE_CLIENT_ID: str = ''
+    GOOGLE_CLIENT_SECRET: str = ''
+
+    S3_ACCESS_KEY: str = ''
+    S3_SECRET_KEY: str = ''
+    S3_ENDPOINT_URL: str = ''
+    S3_BUCKET_NAME: str = ''
+    S3_CERTIFICATE: None | str = None
+    @computed_field 
+    @property 
+    def SHOULD_USE_S3(self) -> bool:
+        return (self.S3_ACCESS_KEY != '' and self.S3_SECRET_KEY != '' 
+                and self.S3_ENDPOINT_URL != '' and self.S3_BUCKET_NAME != ''
+        )
 
     BACKEND_CORS_ORIGINS: Annotated[
         list[AnyUrl] | str, BeforeValidator(parse_cors)
@@ -65,6 +86,10 @@ class Settings(BaseSettings):
             path=self.POSTGRES_DB,
         )
 
+    REDIS_PASSWORD: str
+    REDIS_HOST: str
+    REDIS_PORT: int = 6379
+
     SMTP_TLS: bool = True 
     SMTP_SSL: bool = False 
     SMTP_PORT: int = 587 
@@ -81,7 +106,7 @@ class Settings(BaseSettings):
         return self
 
     EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
-    EMAIL_ACTIVATION_TOKEN_EXPIRE_MINUTES: int = 30
+    EMAIL_ACTIVATION_TOKEN_EXPIRE_MINUTES: int = 10
 
     @computed_field 
     @property 

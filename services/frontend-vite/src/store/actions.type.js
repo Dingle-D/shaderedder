@@ -1,0 +1,9 @@
+export const CHECK_AUTH = "checkAuth";
+export const LOGIN = "login";
+export const LOGOUT = "logout";
+export const REGISTER = "register";
+export const UPDATE_USER = "updateUser";
+export const SET_AUTH = "setAuth";
+export const SET_USER_INFO = "setUserInfo";
+export const PURGE_AUTH = "purgeAuth";
+export const SET_ERROR = "setError";

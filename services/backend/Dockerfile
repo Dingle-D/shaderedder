@@ -1,4 +1,4 @@
-FROM python:3.11-buster
+FROM python:3.11-alpine
 
 RUN mkdir app
 WORKDIR /app
@@ -11,3 +11,4 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 COPY app/ .
+COPY ./selectel-ca.crt .
