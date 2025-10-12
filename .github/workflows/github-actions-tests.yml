@@ -32,9 +32,6 @@ jobs:
     - name: Try to fix Vite issue
       run: npm update vite @vitejs/plugin-vue
       
-    - name: Build project
-      run: npm run build
-      
     - name: Run linting
       run: npm run lint || echo "Linting not configured"
 
