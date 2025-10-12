@@ -6,7 +6,7 @@ from app.main import app
 def test_app_creation():
     """Тест что приложение создается"""
     assert app is not None
-    assert app.title == "FastAPI"  # FastAPI по умолчанию
+    assert app.title == "FastAPI"
 
 
 def test_root_endpoint():
@@ -22,7 +22,7 @@ def test_api_router_included():
     client = TestClient(app)
     
     response = client.get("/api/v1/nonexistent")
-    assert response.status_code != 500  # Не должно быть внутренней ошибки сервера
+    assert response.status_code != 500
 
 
 def test_cors_enabled():
