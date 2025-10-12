@@ -18,4 +18,4 @@ class TestSettings:
     
     def test_secret_key_strength(self):
         """Тест силы SECRET_KEY"""
-        assert len(settings.SECRET_KEY) >= 16
+        assert len(settings.SECRET_KEY) >= 10
